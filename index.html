@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misi Budi: Kembara Batu Belah</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Fredoka+One&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Pustaka Konfeti Canvas -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --utama: #ffd700;
+            --hijau-neon: #00ff88;
+            --merah-neon: #ff3366;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(rgba(5, 15, 10, 0.85), rgba(5, 10, 15, 0.9)),
+                        url('https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?q=80&w=1600&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        #bekas-permainan {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(10, 25, 18, 0.9);
+            border: 3px solid rgba(0, 255, 136, 0.4);
+            border-radius: 24px;
+            padding: 25px;
+            box-shadow: 0 0 60px rgba(0, 0, 0, 0.9), inset 0 0 30px rgba(0, 255, 136, 0.15);
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #lapisan-pudar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease-in-out;
+            z-index: 99;
+        }
+
+        #lapisan-pudar.gelap {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .tajuk-permainan {
+            font-family: 'Cinzel', serif;
+            color: var(--utama);
+            font-size: 2.2rem;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            margin-bottom: 15px;
+        }
+
+        .bar-status {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 12px;
+            padding: 10px 20px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .lencana {
+            background: linear-gradient(45deg, #059669, #10b981);
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        #kotak-cerita {
+            background: rgba(5, 15, 10, 0.85);
+            border-left: 5px solid var(--hijau-neon);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 1.05rem;
+            text-align: left;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .label-pembantu {
+            color: var(--hijau-neon);
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .pentas-hutan {
+            background: linear-gradient(rgba(0, 20, 10, 0.5), rgba(0, 10, 5, 0.7)),
+                        url('https://images.unsplash.com/photo-1511497584788-8767611136f6?q=80&w=1000&auto=format&fit=crop') no-repeat center center;
+            background-size: cover;
+            border: 3px solid #2d5a3f;
+            border-radius: 20px;
+            padding: 20px 15px;
+            margin: 15px 0;
+            position: relative;
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .laluan-watak {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 10px 20px;
+            margin-bottom: 15px;
+            border-bottom: 3px solid #385e40;
+            position: relative;
+        }
+
+        .wira {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            left: 0;
+            z-index: 2;
+        }
+
+        .wira img {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.5));
+        }
+
+        .halangan { font-size: 2.5rem; transition: all 0.5s ease; }
+        .destinasi { font-size: 2.5rem; }
+        .jalan-terus { transform: translateX(500px); }
+        .halangan-hilang { transform: scale(0) rotate(180deg); opacity: 0; }
+
+        #bekas-batu {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .batu {
+            background: linear-gradient(145deg, #3a4a3c, #1e2b20);
+            color: #f1f5f9;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.3rem;
+            padding: 18px 28px;
+            border-radius: 40% 60% 70% 30% / 40% 50% 50% 60%;
+            cursor: pointer;
+            border: 3px solid #52795d;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.7);
+            transition: all 0.3s ease;
+            animation: terapung 4s ease-in-out infinite;
+            user-select: none;
+        }
+
+        .batu:nth-child(even) { animation-delay: 2s; }
+        .batu:hover { transform: translateY(-8px) scale(1.08); border-color: var(--hijau-neon); }
+        .batu.dipilih {
+            border-color: var(--utama);
+            background: linear-gradient(145deg, #1b4332, #081c15);
+            box-shadow: 0 0 20px var(--utama);
+            color: var(--utama);
+        }
+
+        .batu-betul {
+            border-color: var(--hijau-neon) !important;
+            background: linear-gradient(145deg, #059669, #10b981) !important;
+            box-shadow: 0 0 35px var(--hijau-neon) !important;
+            color: #ffffff !important;
+            transform: scale(1.15) !important;
+            animation: denyutHijau 0.6s infinite alternate !important;
+        }
+
+        @keyframes denyutHijau {
+            0% { box-shadow: 0 0 20px var(--hijau-neon); }
+            100% { box-shadow: 0 0 40px var(--hijau-neon); }
+        }
+
+        .batu-salah {
+            border-color: var(--merah-neon) !important;
+            background: linear-gradient(145deg, #991b1b, #ef4444) !important;
+            box-shadow: 0 0 30px var(--merah-neon) !important;
+            animation: hibridSalah 0.5s ease-in-out !important;
+        }
+
+        @keyframes hibridSalah {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        @keyframes terapung {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        #butang-mikrofon {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            border: none;
+            padding: 14px 35px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            margin-top: 10px;
+        }
+
+        #butang-mikrofon.mendengar {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 0 30px #ef4444;
+            animation: denyut 1.2s infinite;
+        }
+
+        @keyframes denyut {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        #maklum-balas { margin-top: 12px; font-size: 1.1rem; font-weight: 600; min-height: 30px; }
+        .skrin { display: none; }
+        .aktif { display: block; }
+
+        .butang-tindakan {
+            background: linear-gradient(135deg, #10b981, #047857);
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .butang-tindakan:hover {
+            transform: scale(1.05);
+        }
+
+        .ulang-suara {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--hijau-neon);
+            color: var(--hijau-neon);
+            padding: 4px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .kotak-ulasan-tunggal {
+            background: rgba(0, 0, 0, 0.65);
+            padding: 22px;
+            border-radius: 16px;
+            text-align: left;
+            margin-top: 20px;
+            line-height: 1.6;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        /* KAD MULA */
+        .kad-mula {
+            background: rgba(5, 15, 10, 0.85);
+            border: 2px solid var(--hijau-neon);
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+            text-align: left;
+        }
+
+        .pesanan-budi {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px dashed var(--hijau-neon);
+            padding: 15px;
+            border-radius: 12px;
+            margin-top: 15px;
+        }
+
+        .pesanan-budi img {
+            width: 75px;
+            height: auto;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.5));
+        }
+
+        .pesanan-budi p {
+            font-size: 0.95rem;
+            color: #e2e8f0;
+            line-height: 1.4;
+        }
+
+        .kotak-manual {
+            background: rgba(0, 0, 0, 0.5);
+            border-left: 4px solid var(--utama);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .kotak-manual h3 {
+            color: var(--utama);
+            font-size: 1.05rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .kotak-manual ul {
+            padding-left: 20px;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .kumpulan-input {
+            margin: 20px 0 10px 0;
+            text-align: left;
+        }
+
+        .kumpulan-input label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--utama);
+        }
+
+        .medan-input {
+            width: 100%;
+            padding: 14px 18px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            border: 2px solid rgba(0, 255, 136, 0.4);
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            outline: none;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        .medan-input:focus {
+            border-color: var(--hijau-neon);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        .status-penyata {
+            font-size: 0.95rem;
+            margin-top: 15px;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+<div id="bekas-permainan">
+    <div id="lapisan-pudar"></div>
+
+    <h1 class="tajuk-permainan">🌲 MISI BUDI: KEMBARA BATU BELAH 🌲</h1>
+
+    <!-- SKRIN MULA -->
+    <div id="skrin-mula" class="skrin aktif">
+        <div class="kad-mula">
+            <h2 style="text-align: center; color: var(--utama);">Selamat Datang, Pengembara Cilik! 👋</h2>
+            
+            <!-- DIALOG AJAKAN BUDI -->
+            <div class="pesanan-budi">
+                <img src="https://lh3.googleusercontent.com/d/1QhNEZpRCu1dNA5DoG4iKx-IggsNoLzR5" alt="Budi">
+                <div>
+                    <b style="color: var(--hijau-neon); display: block; margin-bottom: 3px;">Budi berkata:</b>
+                    <p>"Hai, saya Budi! Dalam kembara kisah rakyat kali ini, saya sedang membantu Melur mencari ibunya, Mak Minah yang telah lari ke Batu Belah. Boleh kamu bantu dan temani kami dalam misi ini?"</p>
+                </div>
+            </div>
+
+            <!-- MANUAL / CARA BERMAIN -->
+            <div class="kotak-manual">
+                <h3>📖 Manual & Cara Bermain:</h3>
+                <ul>
+                    <li>Dengar arahan dan kisah yang dibacakan oleh pencerita.</li>
+                    <li>Pilih dan <b>tekan batu terapung</b> yang mengandungi kata sasaran yang betul.</li>
+                    <li>Tekan butang <b>🎙️ TEKAN & SEBUT</b> dan sebut perkataan tersebut dengan jelas.</li>
+                    <li>Selesaikan kesemua 5 tahap untuk membantu Budi dan Melur bertemu Mak Minah!</li>
+                </ul>
+            </div>
+
+            <div class="kumpulan-input">
+                <label for="nama-pemain">👤 Sila Masukkan Nama Kamu:</label>
+                <input type="text" id="nama-pemain" class="medan-input" placeholder="Contoh: Ahmad Zaki" autocomplete="off">
+            </div>
+
+            <div style="text-align: center;">
+                <button class="butang-tindakan" onclick="mulaPermainan()">🚀 MULA KEMBARA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SKRIN PERMAINAN -->
+    <div id="skrin-permainan" class="skrin">
+        <div class="bar-status">
+            <span>SOALAN: <span id="teks-tahap" class="lencana">1 / 5</span></span>
+            <span>PEMAIN: <span id="paparan-pemain" style="color: var(--utama);">-</span></span>
+        </div>
+
+        <div id="kotak-cerita">
+            <div class="label-pembantu">
+                <span>🧝‍♀️ NARASI KEMBARA BUDI</span>
+                <button class="ulang-suara" onclick="ulangSuara()">🔊 Ulang Suara</button>
+            </div>
+            <span id="teks-cerita">Memuatkan naratif halangan...</span>
+        </div>
+
+        <div class="pentas-hutan">
+            <div class="laluan-watak">
+                <!-- Gambar Budi & Melur -->
+                <div id="sprite-wira" class="wira">
+                    <img src="https://lh3.googleusercontent.com/d/1QhNEZpRCu1dNA5DoG4iKx-IggsNoLzR5" alt="Budi">
+                    <img src="https://lh3.googleusercontent.com/d/1UH08ZYqzhSFtITuDblDIEWeyMmiVls5e" alt="Melur">
+                </div>
+                <div id="sprite-halangan" class="halangan">🐟</div>
+                <div id="sprite-destinasi" class="destinasi">🚪</div>
+            </div>
+
+            <div id="bekas-batu"></div>
+        </div>
+
+        <button id="butang-mikrofon" onclick="mulaMendengar()">
+            <span>🎙️ TEKAN & SEBUT</span>
+        </button>
+        
+        <div id="maklum-balas"></div>
+    </div>
+
+    <!-- SKRIN PENAMAT PERMAINAN -->
+    <div id="skrin-penamat" class="skrin">
+        <h1 style="color: #10b981; font-size: 2.5rem; margin-bottom: 10px;">🎉 KEMBARA TAMAT! 🎉</h1>
+        <p style="font-size: 1.2rem;">🌳 Syabas! Kamu telah berjaya membantu Budi dan Melur!</p>
+
+        <div class="kotak-ulasan-tunggal" style="border-left: 5px solid #10b981;">
+            <b style="color: #6ee7b7; font-size: 1.15rem;">📝 ULASAN & SKOR GURU (PBD):</b>
+            <p id="teks-ulasan-penamat" style="margin-top: 10px; font-size: 1.05rem;">-</p>
+        </div>
+
+        <div id="status-penyata-penamat" class="status-penyata"></div>
+        <button class="butang-tindakan" onclick="mainSemula()">🔄 MAIN SEMULA</button>
+    </div>
+</div>
+
+<script>
+    // Pautan Google Apps Script & Pengenalan Game
+    const PAUTAN_GOOGLE_SCRIPT = "https://script.google.com/macros/s/AKfycbz2s7j4Sm1fgFBzlNHlwYZ6S37eXfaO28aMrIKfzGbe_5c5K1Fkmm9I50xpvcmTWTCA2A/exec";
+    const NOMBOR_PERMAINAN = 3;
+
+    // Soalan kembara yang disesuaikan dengan konsep Budi membantu Melur mencari Mak Minah
+    const soalanKembara = [
+        {
+            tahap: 1,
+            kataSasaran: "TEMBAKUL",
+            pilihan: ["KELI", "TEMBAKUL", "HARUAN", "PATIN"],
+            ikonHalangan: "🐟", 
+            cerita: "Kisah bermula apabila Mak Minah berjaya menangkap seekor ikan tembakul yang bertelur. Cari batu bertulis 'TEMBAKUL' dan sebutnya!"
+        },
+        {
+            tahap: 2,
+            kataSasaran: "TERESAK-ESAK",
+            pilihan: ["TERESAK-ESAK", "TERJERIT-JERIT", "TERSENAWI", "TERTAWA"],
+            ikonHalangan: "😭", 
+            cerita: "Melur memasak telur ikan tersebut, namun Pekan menangis teresak-esak kerana mahukan telur itu. Cari batu bertulis 'TERESAK-ESAK'!"
+        },
+        {
+            tahap: 3,
+            kataSasaran: "MISTERI",
+            pilihan: ["AJAIB", "RAHSIA", "MISTERI", "GELAP"],
+            ikonHalangan: "🪨", 
+            cerita: "Mak Minah yang berkecil hati berlari menuju ke Batu Belah yang misteri. Budi dan Melur terus mengejarnya. Sebut batu 'MISTERI'!"
+        },
+        {
+            tahap: 4,
+            kataSasaran: "YATIM PIATU",
+            pilihan: ["KESEORANGAN", "YATIM PIATU", "TERBIAR", "SEDINGIN"],
+            ikonHalangan: "🍂", 
+            cerita: "Budi bertekad membantu Melur agar Melur dan Pekan tidak menjadi anak yatim piatu. Cari batu bertulis 'YATIM PIATU'!"
+        },
+        {
+            tahap: 5,
+            kataSasaran: "MENYAYANGI",
+            pilihan: ["MENGHORMATI", "BERBAKTI", "MENYAYANGI", "MELINDUNGI"],
+            ikonHalangan: "❤️", 
+            cerita: "Kisah ini mengajar Budi dan kita semua agar sentiasa menyayangi dan menghormati ibu. Cari serta sebut batu 'MENYAYANGI'!"
+        }
+    ];
+
+    let indeksTahapSemasa = 0;
+    let batuDipilih = null;
+    let namaMurid = "";
+    let suaraWanitaMelayu = null;
+    let jumlahBetul = 0;
+    let isListening = false;
+
+    const audioPembukaan = new Audio('audio/pembukaan-batu-belah.mp3');
+    const audioSoalan = {
+    "TEMBAKUL": new Audio('audio/tembakul.mp3'),
+    "TERESAK-ESAK": new Audio('audio/teresak-esak.mp3'),
+    "MISTERI": new Audio('audio/misteri.mp3'),
+    "YATIM PIATU": new Audio('audio/yatim-piatu.mp3'),
+    "MENYAYANGI": new Audio('audio/menyayangi.mp3')
+};
+
+const audioBetul = new Audio('audio/betul-batu-belah.mp3');
+const audioSalahBatu = new Audio('audio/salah-batu-belah.mp3');
+const audioSalahSebutan = new Audio('audio/salah-sebutan-batu-belah.mp3');
+const audioPilihBatuDahulu = new Audio('audio/pilih-batu-dahulu-batu-belah.mp3');
+const audioSuaraTidakJelas = new Audio('audio/suara-tidak-jelas-batu-belah.mp3');
+const audioTamat100 = new Audio('audio/tamat-100-batu-belah.mp3');
+const audioTamat80 = new Audio('audio/tamat-80-batu-belah.mp3');
+const audioTamat60 = new Audio('audio/tamat-60-batu-belah.mp3');
+const audioTamatBawah60 = new Audio('audio/tamat-bawah-60-batu-belah.mp3');
+function hentikanAudioSoalan() {
+    Object.values(audioSoalan).forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+    });
+}
+
+    const PengecamSuara = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let pengecam = null;
+
+    if (PengecamSuara) {
+        pengecam = new PengecamSuara();
+        pengecam.lang = 'ms-MY';
+        pengecam.continuous = false;
+        pengecam.interimResults = false;
+
+        pengecam.onstart = function() {
+            isListening = true;
+        };
+
+        pengecam.onresult = function(acara) {
+            isListening = false;
+            const teksDisebut = acara.results[0][0].transcript.toUpperCase().trim();
+            semakKeputusanSuara(teksDisebut);
+        };
+
+        pengecam.onerror = function() {
+    isListening = false;
+
+    audioSuaraTidakJelas.currentTime = 0;
+    audioSuaraTidakJelas.play();
+
+    paparMaklumBalas("⚠️ Suara kurang jelas. Sila cuba sebut sekali lagi!", "#f59e0b");
+    setSemulaButangMikrofon();
+};
+
+        pengecam.onend = function() {
+            isListening = false;
+            setSemulaButangMikrofon();
+        };
+    }
+
+    function mainkanBunyi(jenis) {
+        try {
+            const konteks = new (window.AudioContext || window.webkitAudioContext)();
+            const osilator = konteks.createOscillator();
+            const gandaan = konteks.createGain();
+
+            if (jenis === 'menang') {
+                osilator.type = 'triangle';
+                osilator.frequency.setValueAtTime(523.25, konteks.currentTime);
+                osilator.frequency.setValueAtTime(659.25, konteks.currentTime + 0.1);
+                osilator.frequency.setValueAtTime(783.99, konteks.currentTime + 0.2);
+                osilator.frequency.setValueAtTime(1046.50, konteks.currentTime + 0.3);
+                gandaan.gain.setValueAtTime(0.3, konteks.currentTime);
+                gandaan.gain.exponentialRampToValueAtTime(0.01, konteks.currentTime + 0.6);
+                osilator.connect(gandaan);
+                gandaan.connect(konteks.destination);
+                osilator.start();
+                osilator.stop(konteks.currentTime + 0.6);
+            } else if (jenis === 'buzz') {
+                osilator.type = 'sawtooth';
+                osilator.frequency.setValueAtTime(180, konteks.currentTime);
+                osilator.frequency.linearRampToValueAtTime(70, konteks.currentTime + 0.5);
+                gandaan.gain.setValueAtTime(0.5, konteks.currentTime);
+                gandaan.gain.exponentialRampToValueAtTime(0.01, konteks.currentTime + 0.5);
+                osilator.connect(gandaan);
+                gandaan.connect(konteks.destination);
+                osilator.start();
+                osilator.stop(konteks.currentTime + 0.5);
+            }
+        } catch(e){}
+    }
+
+    function lancarkanKonfeti() {
+        if (typeof confetti === 'function') {
+            confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#00ff88', '#ffd700', '#00f0ff', '#ffffff']
+            });
+        }
+    }
+
+    function muatSuaraWanitaMelayu() {
+        if ('speechSynthesis' in window) {
+            const suaraList = window.speechSynthesis.getVoices();
+            suaraWanitaMelayu = suaraList.find(v => v.lang.includes('ms') || v.lang.includes('MS')) ||
+                                suaraList.find(v => (v.lang.includes('id') || v.lang.includes('ID')) && v.name.toLowerCase().includes('female')) ||
+                                suaraList.find(v => v.lang.includes('id') || v.lang.includes('ID'));
+
+            if (!suaraWanitaMelayu) {
+                suaraWanitaMelayu = suaraList.find(v => v.name.toLowerCase().includes('zira') || v.name.toLowerCase().includes('yiting'));
+            }
+        }
+    }
+
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = muatSuaraWanitaMelayu;
+    }
+
+    function sebutTeks(teks) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const sebutan = new SpeechSynthesisUtterance(teks);
+            
+            if (suaraWanitaMelayu) {
+                sebutan.voice = suaraWanitaMelayu;
+                sebutan.lang = suaraWanitaMelayu.lang;
+            } else {
+                sebutan.lang = 'ms-MY';
+            }
+            
+            sebutan.pitch = 1.1;
+            sebutan.rate = 0.88;
+            window.speechSynthesis.speak(sebutan);
+        }
+    }
+
+    function ulangSuara() {
+    const dataTahap = soalanKembara[indeksTahapSemasa];
+    const audioSemasa = audioSoalan[dataTahap.kataSasaran];
+
+    if (audioSemasa) {
+        audioSemasa.currentTime = 0;
+        audioSemasa.play();
+    }
+}
+
+    function mulaPermainan() {
+    const inputNama = document.getElementById('nama-pemain').value.trim();
+
+    if (!inputNama) {
+        alert("Sila masukkan nama murid dahulu untuk memulakan permainan!");
+        return;
+    }
+
+    namaMurid = inputNama;
+    jumlahBetul = 0;
+
+    document.getElementById('paparan-pemain').innerText = namaMurid;
+    tunjukkanSkrin('skrin-permainan');
+
+    // Mainkan audio pembukaan Budi
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+
+    audioPembukaan.currentTime = 0;
+    audioPembukaan.play();
+
+    // Selepas audio pembukaan habis, baru masuk Soalan 1
+    audioPembukaan.onended = function() {
+        tetapkanTahap();
+    };
+}
+
+    function tetapkanTahap() {
+        const dataTahap = soalanKembara[indeksTahapSemasa];
+
+        document.getElementById('teks-tahap').innerText = `${dataTahap.tahap} / 5`;
+        document.getElementById('teks-cerita').innerText = dataTahap.cerita;
+        document.getElementById('maklum-balas').innerText = "";
+        batuDipilih = null;
+
+        const wira = document.getElementById('sprite-wira');
+        const halangan = document.getElementById('sprite-halangan');
+        if (wira) wira.classList.remove('jalan-terus');
+        if (halangan) {
+            halangan.classList.remove('halangan-hilang');
+            halangan.innerText = dataTahap.ikonHalangan;
+        }
+
+        const audioSemasa = audioSoalan[dataTahap.kataSasaran];
+
+if (audioSemasa) {
+    audioSemasa.currentTime = 0;
+    audioSemasa.play();
+}
+
+        const bekasBatu = document.getElementById('bekas-batu');
+        bekasBatu.innerHTML = "";
+
+        dataTahap.pilihan.forEach(perkataan => {
+            const butang = document.createElement('div');
+            butang.className = 'batu';
+            butang.innerText = perkataan;
+            butang.onclick = () => pilihBatu(butang, perkataan);
+            bekasBatu.appendChild(butang);
+        });
+    }
+
+    function pilihBatu(elemen, perkataan) {
+        document.querySelectorAll('.batu').forEach(b => {
+            b.classList.remove('dipilih');
+        });
+        elemen.classList.add('dipilih');
+        batuDipilih = { elemen: elemen, perkataan: perkataan };
+        paparMaklumBalas(`Batu '${perkataan}' dipilih. Tekan MIKROFON & sebut!`, "#00ff88");
+    }
+
+    function mulaMendengar() {
+        if (!batuDipilih) {
+    audioPilihBatuDahulu.currentTime = 0;
+    audioPilihBatuDahulu.play();
+
+    paparMaklumBalas("⚠️ Sila tekan dan pilih satu batu terapung dahulu!", "#f59e0b");
+    return;
+}
+
+        if (pengecam) {
+            if (isListening) {
+                try { pengecam.stop(); } catch(e){}
+                isListening = false;
+            }
+
+            const butangMic = document.getElementById('butang-mikrofon');
+            if (butangMic) {
+                butangMic.classList.add('mendengar');
+                butangMic.innerHTML = "<span>🎙️ MENDENGAR... SEBUT SEKARANG</span>";
+            }
+
+            try {
+                pengecam.start();
+            } catch(e) {
+                setSemulaButangMikrofon();
+            }
+        } else {
+            alert("Pengesahan suara tidak disokong pada pelayar ini. Sila guna Google Chrome.");
+        }
+    }
+
+    function setSemulaButangMikrofon() {
+        const butangMic = document.getElementById('butang-mikrofon');
+        if (butangMic) {
+            butangMic.classList.remove('mendengar');
+            butangMic.innerHTML = "<span>🎙️ TEKAN & SEBUT</span>";
+        }
+    }
+
+    function semakKeputusanSuara(teksDisebut) {
+        const dataTahap = soalanKembara[indeksTahapSemasa];
+
+        // ❌ BATU SALAH
+        if (batuDipilih.perkataan !== dataTahap.kataSasaran) {
+    batuDipilih.elemen.classList.add('batu-salah');
+
+    hentikanAudioSoalan();
+
+    audioSalahBatu.currentTime = 0;
+    audioSalahBatu.play();
+            paparMaklumBalas(`❌ SALAH BATU! Batu '${batuDipilih.perkataan}' bukan jawapannya.`, "#ff3366");
+            
+            setTimeout(() => {
+                teruskanKeSoalanSeterusnya();
+            }, 1200);
+            return;
+        }
+
+        // ✅ BATU BETUL + SEBUTAN BETUL
+        if (teksDisebut.includes(dataTahap.kataSasaran)) {
+    batuDipilih.elemen.classList.add('batu-betul');
+
+    hentikanAudioSoalan();
+
+    audioBetul.currentTime = 0;
+    audioBetul.play();
+            lancarkanKonfeti();
+            paparMaklumBalas("✨ SEBUTAN TEPAT! Budi & Melur mara!", "#00ff88");
+            
+            jumlahBetul++;
+
+            const halangan = document.getElementById('sprite-halangan');
+            const wira = document.getElementById('sprite-wira');
+            if (halangan) halangan.classList.add('halangan-hilang');
+            if (wira) wira.classList.add('jalan-terus');
+
+            audioBetul.onended = function() {
+    teruskanKeSoalanSeterusnya();
+};
+
+        } else {
+            // ❌ SEBUTAN SALAH
+            batuDipilih.elemen.classList.add('batu-salah');
+
+    hentikanAudioSoalan();
+
+    audioSalahSebutan.currentTime = 0;
+    audioSalahSebutan.play();
+            paparMaklumBalas(`❌ SEBUTAN SALAH! ("${teksDisebut}")`, "#ff3366");
+            
+            audioSalahSebutan.onended = function() {
+    teruskanKeSoalanSeterusnya();
+};
+        }
+    }
+
+    function teruskanKeSoalanSeterusnya() {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+        const lapisanPudar = document.getElementById('lapisan-pudar');
+        if (lapisanPudar) lapisanPudar.classList.add('gelap');
+
+        setTimeout(() => {
+            indeksTahapSemasa++;
+            if (indeksTahapSemasa < soalanKembara.length) {
+                tetapkanTahap();
+                if (lapisanPudar) lapisanPudar.classList.remove('gelap');
+            } else {
+                if (lapisanPudar) lapisanPudar.classList.remove('gelap');
+                paparUlasanPenamat();
+                tunjukkanSkrin('skrin-penamat');
+            }
+        }, 800);
+    }
+
+    function paparUlasanPenamat() {
+        const kotakUlasan = document.getElementById('teks-ulasan-penamat');
+        const markahAkhir = jumlahBetul * 20; 
+        hentikanAudioSoalan();
+        let ulasanTeks = "";
+        let tahapPenguasaan = 1;
+
+        if (markahAkhir === 100) {
+            hentikanAudioSoalan();
+            tahapPenguasaan = 6;
+            ulasanTeks = "Syabas dan tahniah! Sebutan lisan dan pemahaman cerita kamu berada pada tahap Sangat Cemerlang. Kamu berjaya menjawab semua soalan dengan tepat. Teruskan usaha hebat ini!";
+            audioTamat100.currentTime = 0;
+    audioTamat100.play();
+        } else if (markahAkhir >= 80) {
+            tahapPenguasaan = 5;
+            ulasanTeks = "Syabas! Kamu menunjukkan prestasi yang sangat baik dalam sebutan dan pemahaman. Teruskan latihan untuk mencapai keputusan yang sempurna!";
+            audioTamat80.currentTime = 0;
+    audioTamat80.play();
+        } else if (markahAkhir >= 60) {
+            tahapPenguasaan = 4;
+            ulasanTeks = "Bagus! Kamu berjaya menyelesaikan kembara ini. Tingkatkan lagi latihan membaca dan menyebut kata supaya lebih fasih kelak.";
+            audioTamat60.currentTime = 0;
+    audioTamat60.play();
+        } else {
+            tahapPenguasaan = 3;
+            ulasanTeks = "Usaha yang baik! Jangan putus asa, teruskan latihan sebutan dan bacaan untuk meningkatkan lagi penguasaan kamu.";
+            audioTamatBawah60.currentTime = 0;
+    audioTamatBawah60.play();
+        }
+
+        if (kotakUlasan) {
+            kotakUlasan.innerHTML = `
+                <b>SKOR: ${markahAkhir}% (${jumlahBetul} / 5 BETUL) | TAHAP PENGUASAAN ${tahapPenguasaan}</b><br><br>
+                "${ulasanTeks}"
+            `;
+        }
+
+        hantarKeputusanGame(namaMurid, markahAkhir, ulasanTeks);
+    }
+
+    function paparMaklumBalas(mesej, warna) {
+        const fb = document.getElementById('maklum-balas');
+        if (fb) {
+            fb.innerText = mesej;
+            fb.style.color = warna;
+        }
+    }
+
+    function tunjukkanSkrin(idSkrin) {
+        document.querySelectorAll('.skrin').forEach(s => s.classList.remove('aktif'));
+        const skrinSasaran = document.getElementById(idSkrin);
+        if (skrinSasaran) skrinSasaran.classList.add('aktif');
+    }
+
+    function mainSemula() {
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
+
+    // Hentikan semua audio soalan
+    hentikanAudioSoalan();
+
+    // Hentikan semua audio feedback
+    const semuaAudio = [
+        audioPembukaan,
+        audioBetul,
+        audioSalahBatu,
+        audioSalahSebutan,
+        audioPilihBatuDahulu,
+        audioSuaraTidakJelas,
+        audioTamat100,
+        audioTamat80,
+        audioTamat60,
+        audioTamatBawah60
+    ];
+
+    semuaAudio.forEach(audio => {
+        audio.pause();
+        audio.currentTime = 0;
+    });
+
+    indeksTahapSemasa = 0;
+    jumlahBetul = 0;
+    batuDipilih = null;
+
+    tunjukkanSkrin('skrin-mula');
+}
+
+    // Fungsi untuk hantar keputusan ke Google Sheets
+    function hantarKeputusanGame(namaMurid, skorMurid, ulasanGame) {
+        const statusEl = document.getElementById("status-penyata-penamat");
+        if (statusEl) {
+            statusEl.innerText = "⏳ Menghantar keputusan ke Google Sheets...";
+            statusEl.style.color = "#0284c7";
+        }
+
+        const dataGame = {
+            nama: namaMurid,
+            book: "BATU BELAH BATU BERTANGKUP",
+            game: NOMBOR_PERMAINAN,
+            gameCol: "G5",
+            skor: skorMurid,
+            ulasan: ulasanGame || ""
+        };
+
+        fetch(PAUTAN_GOOGLE_SCRIPT, {
+            method: "POST",
+            mode: "no-cors",
+            headers: {
+                "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify(dataGame)
+        })
+        .then(() => {
+            if (statusEl) {
+                statusEl.innerText = "✅ Keputusan Game 3 berjaya dihantar ke Google Sheets!";
+                statusEl.style.color = "#059669";
+            }
+        })
+        .catch(error => {
+            console.error("Ralat Penghantaran:", error);
+            if (statusEl) {
+                statusEl.innerText = "⚠️ Ralat rangkaian semasa menghantar keputusan.";
+                statusEl.style.color = "#dc2626";
+            }
+        });
+    }
+</script>
+</body>
+</html>
